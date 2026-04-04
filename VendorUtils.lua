@@ -38,11 +38,11 @@ local function DoRepair()
     local cost, canRepair = GetRepairAllCost()
     if not canRepair or cost == 0 then return end
     if GetMoney() < cost then
-        print("|cff00ccff[LightUI]|r Not enough gold to auto-repair (need " .. FormatMoney(cost) .. ").")
+        print("|cff00ccff[LightKit]|r Not enough gold to auto-repair (need " .. FormatMoney(cost) .. ").")
         return
     end
     RepairAllItems()
-    print("|cff00ccff[LightUI]|r Auto-repaired all items for " .. FormatMoney(cost) .. ".")
+    print("|cff00ccff[LightKit]|r Auto-repaired all items for " .. FormatMoney(cost) .. ".")
 end
 
 local function DoSellGrey()
@@ -62,9 +62,9 @@ local function DoSellGrey()
     end
     if count > 0 then
         if totalCopper > 0 then
-            print(string.format("|cff00ccff[LightUI]|r Sold %d grey item(s) for %s.", count, FormatMoney(totalCopper)))
+            print(string.format("|cff00ccff[LightKit]|r Sold %d grey item(s) for %s.", count, FormatMoney(totalCopper)))
         else
-            print(string.format("|cff00ccff[LightUI]|r Sold %d grey item(s).", count))
+            print(string.format("|cff00ccff[LightKit]|r Sold %d grey item(s).", count))
         end
     end
 end
