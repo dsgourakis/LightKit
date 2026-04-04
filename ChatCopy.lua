@@ -114,6 +114,17 @@ function M:Init(shown)
             BuildCopyButton(frame)
         end
     end
+
+    -- Hook FCF_SetWindowName: called for every chat frame when named,
+    -- including whisper pop-out windows which bypass FCF_OpenNewWindow.
+    hooksecurefunc("FCF_SetWindowName", function(frame)
+        if not frame or frame._luiCopyBtn then return end
+        BuildCopyButton(frame)
+        if LightKitDB and not LightKitDB.showChatCopy then
+            frame._luiCopyBtn:Hide()
+        end
+    end)
+
     if not shown then
         ApplyShown(false)
     end
