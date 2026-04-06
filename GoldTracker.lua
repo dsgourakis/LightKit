@@ -7,8 +7,7 @@
 LightUI.GoldTracker = {}
 local M = LightUI.GoldTracker
 
-local FONT      = "Fonts\\ARIALN.TTF"
-local FONT_SIZE = 12
+local FONT = "Fonts\\ARIALN.TTF"
 
 -- ----------------------------------------------------------------
 --  Gold formatting
@@ -210,6 +209,15 @@ function M:SetLocked(locked)
     LightKitDB.goldFrameLocked = locked
 end
 
+function M:SetFontSize(size)
+    LightKitDB.goldFontSize = size
+    if self.goldLabel then
+        self.goldLabel:SetFont(FONT, size, "")
+        self.frame:SetHeight(size + 8)
+        if self._resize then self._resize() end
+    end
+end
+
 -- ----------------------------------------------------------------
 --  Init
 -- ----------------------------------------------------------------
@@ -217,7 +225,7 @@ end
 function M:Init()
     -- ---- Draggable frame ----------------------------------------
     local f = CreateFrame("Frame", "LightUI_GoldFrame", UIParent, "BackdropTemplate")
-    f:SetSize(120, FONT_SIZE + 8)
+    f:SetSize(120, LightKitDB.goldFontSize + 8)
     f:SetClampedToScreen(true)
     f:SetMovable(true)
     f:EnableMouse(true)
@@ -238,7 +246,7 @@ function M:Init()
 
     -- ---- Gold label ---------------------------------------------
     local label = f:CreateFontString(nil, "OVERLAY")
-    label:SetFont(FONT, FONT_SIZE, "")
+    label:SetFont(FONT, LightKitDB.goldFontSize, "")
     label:SetShadowColor(0, 0, 0, 0.9)
     label:SetShadowOffset(1, -1)
     label:SetPoint("LEFT",  f, "LEFT",  6, 0)

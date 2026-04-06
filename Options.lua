@@ -71,6 +71,7 @@ function M:Init()
             LightUI.EnchantLabels:SetShown(LightUI.defaults.showEnchantLabels)
             LightUI.GoldTracker:SetShown(LightUI.defaults.showGoldTracker)
             LightUI.GoldTracker:SetLocked(LightUI.defaults.goldFrameLocked)
+            LightUI.GoldTracker:SetFontSize(LightUI.defaults.goldFontSize)
             LightUI.GoldTracker:SetDisplayMode(LightUI.defaults.goldDisplayMode)
             LightKitDB.goldHideEmpty = LightUI.defaults.goldHideEmpty
             LightUI.VendorUtils:SetAutoRepair(LightUI.defaults.autoRepair)
@@ -170,7 +171,7 @@ function M:Init()
         function(value) LightUI.ItemLevelTooltip:SetShown(value) end
     )
     Settings.CreateCheckbox(ilvlCat, ilvlSetting,
-        "Appends the inspected item level to the tooltip when hovering a player character.")
+        "Shows the item level on the tooltip when hovering a player character. Requires the player to be within inspect range (Blizzard limitation).")
 
     -- Gear icon item level overlay
     local ilvlIconsSetting = Settings.RegisterProxySetting(
@@ -282,6 +283,21 @@ function M:Init()
     )
     Settings.CreateCheckbox(goldCat, goldLockSetting,
         "Prevent accidental movement. When locked, hold Shift and drag to reposition the frame.")
+
+    -- Font size slider
+    local goldFontSizeSetting = Settings.RegisterProxySetting(
+        goldCat,
+        "LUI_GoldFontSize",
+        Settings.VarType.Number,
+        "Gold tracker font size",
+        LightUI.defaults.goldFontSize,
+        function() return LightKitDB.goldFontSize end,
+        function(value) LightUI.GoldTracker:SetFontSize(value) end
+    )
+    local goldSizeSliderOptions = Settings.CreateSliderOptions(8, 32, 1)
+    goldSizeSliderOptions:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right)
+    Settings.CreateSlider(goldCat, goldFontSizeSetting, goldSizeSliderOptions,
+        "Font size for the gold tracker label (8–32).")
 
     -- Display mode dropdown
     local goldModeSetting = Settings.RegisterProxySetting(

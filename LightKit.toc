@@ -2,7 +2,7 @@
 ## Title: Light Kit
 ## Notes: A lightweight quality-of-life addon. Features list: Fps and ping display, character item-level in tooltip, item-level on item icons, enchant labels, gold tracker, chat copy, disable auto-add spells, auto-sell and auto-repair.
 ## Author: Hateless
-## Version: 1.0.001
+## Version: 1.0.100
 ## SavedVariables: LightKitDB LightUIDB
 ## Category: User Interface
 

@@ -22,6 +22,7 @@ LightUI.defaults = {
     showGoldTracker        = true,
     goldFrameLocked        = true,
     goldFrame              = { x = 80, y = -8 },
+    goldFontSize           = 12,
     goldDisplayMode        = "account",
     goldHideEmpty          = true,
     autoRepair             = true,
