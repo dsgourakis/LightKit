@@ -1,0 +1,5 @@
+package-as: LightKit
+ignore:
+  - .github
+  - .pkgmeta
+  - .gitignore
