@@ -28,6 +28,7 @@ LightUI.defaults = {
     autoRepair             = true,
     autoSellGrey           = true,
     showChatCopy           = true,
+    showDurabilityBars     = true,
 }
 
 -- Recursively fill in any keys that are missing from `db`.
@@ -70,6 +71,7 @@ initFrame:SetScript("OnEvent", function(self, event, addonName)
     LightUI.FPSPing:Init()
     LightUI.ItemLevelTooltip:Init()
     LightUI.ItemLevelIcons:Init()
+    LightUI.DurabilityBars:Init()
     LightUI.EnchantLabels:Init()
     LightUI.GoldTracker:Init()
     LightUI.ChatCopy:Init(LightKitDB.showChatCopy)

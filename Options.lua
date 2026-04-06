@@ -37,6 +37,7 @@ function M:Init()
             "Auto-sell grey items at vendors",
             "Disable auto-add spells to action bars",
             "Chat message copy dialog",
+            "Durability bars on gear slots",
         }
         for _, feat in ipairs(FEATURES) do
             layout:AddInitializer(Settings.CreateElementInitializer(
@@ -68,6 +69,7 @@ function M:Init()
             LightKitDB.itemLevelIconFontSize = LightUI.defaults.itemLevelIconFontSize
             LightKitDB.itemLevelIconFont     = LightUI.defaults.itemLevelIconFont
             LightUI.ItemLevelIcons:RefreshFont()
+            LightUI.DurabilityBars:SetShown(LightUI.defaults.showDurabilityBars)
             LightUI.EnchantLabels:SetShown(LightUI.defaults.showEnchantLabels)
             LightUI.GoldTracker:SetShown(LightUI.defaults.showGoldTracker)
             LightUI.GoldTracker:SetLocked(LightUI.defaults.goldFrameLocked)
@@ -239,6 +241,19 @@ function M:Init()
     end
     Settings.CreateDropdown(ilvlCat, fontSetting, GetFontOptions,
         "Font used for the item level numbers drawn over gear icons.")
+
+    -- Durability bars on gear slots
+    local durSetting = Settings.RegisterProxySetting(
+        ilvlCat,
+        "LUI_ShowDurabilityBars",
+        Settings.VarType.Boolean,
+        "Show durability bars on gear slots",
+        LightUI.defaults.showDurabilityBars,
+        function() return LightKitDB.showDurabilityBars end,
+        function(value) LightUI.DurabilityBars:SetShown(value) end
+    )
+    Settings.CreateCheckbox(ilvlCat, durSetting,
+        "Displays a small color-coded bar on each gear icon in the Character panel showing item durability (green > yellow > red).")
 
     -- Enchant labels on gear slots
     local enchantSetting = Settings.RegisterProxySetting(
