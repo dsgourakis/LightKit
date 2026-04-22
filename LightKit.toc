@@ -1,8 +1,8 @@
-## Interface: 120001
+## Interface: 120005
 ## Title: Light Kit
-## Notes: A lightweight quality-of-life addon. Features list: Fps and ping display, character item-level in tooltip, item-level on item icons, enchant labels, gold tracker, chat copy, disable auto-add spells, auto-sell and auto-repair.
+## Notes: A lightweight and modular quality-of-life addon.
 ## Author: Hateless
-## Version: 1.1.000
+## Version: 1.2.100
 ## SavedVariables: LightKitDB LightUIDB
 ## Category: User Interface
 ## X-Curse-Project-ID: 1504530
@@ -14,6 +14,7 @@ ItemLevelIcons.lua
 DurabilityBars.lua
 EnchantLabels.lua
 GoldTracker.lua
-ChatCopy.lua
+Chat.lua
 VendorUtils.lua
+SpecInfo.lua
 Options.lua

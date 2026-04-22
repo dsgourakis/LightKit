@@ -38,6 +38,7 @@ function M:Init()
             "Disable auto-add spells to action bars",
             "Chat message copy dialog",
             "Durability bars on gear slots",
+            "Loot spec & talent loadout indicator",
         }
         for _, feat in ipairs(FEATURES) do
             layout:AddInitializer(Settings.CreateElementInitializer(
@@ -76,9 +77,19 @@ function M:Init()
             LightUI.GoldTracker:SetFontSize(LightUI.defaults.goldFontSize)
             LightUI.GoldTracker:SetDisplayMode(LightUI.defaults.goldDisplayMode)
             LightKitDB.goldHideEmpty = LightUI.defaults.goldHideEmpty
+            LightUI.SetAnchorChained(LightUI.defaults.anchorDataFrames)
+            LightKitDB.snapToGrid = LightUI.defaults.snapToGrid
             LightUI.VendorUtils:SetAutoRepair(LightUI.defaults.autoRepair)
             LightUI.VendorUtils:SetAutoSellGrey(LightUI.defaults.autoSellGrey)
             LightUI.ChatCopy:SetShown(LightUI.defaults.showChatCopy)
+            LightUI.ChatCopy:SetKeepHistory(LightUI.defaults.chatKeepHistory)
+            LightUI.SpecInfo:SetShown(LightUI.defaults.showSpecInfo)
+            LightUI.SpecInfo:SetLocked(LightUI.defaults.specInfoFrameLocked)
+            LightUI.SpecInfo:SetFontSize(LightUI.defaults.specInfoFontSize)
+            LightUI.SpecInfo:SetShowSpec(LightUI.defaults.specInfoShowSpec)
+            LightUI.SpecInfo:SetShowLoot(LightUI.defaults.specInfoShowLoot)
+            LightUI.SpecInfo:SetShowLoadout(LightUI.defaults.specInfoShowLoadout)
+            LightUI.SetFrameStyle(LightUI.defaults.frameStyle)
             SetCVar("AutoPushSpellToActionBar", "0") -- default: auto-add disabled
             print("|cffffd700Light Kit:|r All settings reset to defaults.")
             Settings.OpenToCategory(M.category:GetID())
@@ -92,6 +103,56 @@ function M:Init()
             false)
         layout:AddInitializer(resetInit)
     end
+
+    -- ================================================================
+    --  Subcategory: Appearance
+    -- ================================================================
+    local appearCat = Settings.RegisterVerticalLayoutSubcategory(category, "Appearance")
+
+    local frameStyleSetting = Settings.RegisterProxySetting(
+        appearCat,
+        "LUI_FrameStyle",
+        Settings.VarType.String,
+        "Frame style",
+        LightUI.defaults.frameStyle,
+        function() return LightKitDB.frameStyle end,
+        function(value) LightUI.SetFrameStyle(value) end
+    )
+    local function GetFrameStyleOptions()
+        local container = Settings.CreateControlTextContainer()
+        container:Add("tooltip", "Tooltip  (bordered)")
+        container:Add("minimal", "Minimal  (flat, no border)")
+        container:Add("none",    "None  (text only)")
+        return container:GetData()
+    end
+    Settings.CreateDropdown(appearCat, frameStyleSetting, GetFrameStyleOptions,
+        "Visual style applied to all floating frames (FPS/Ping, Gold Tracker, Spec Info).")
+
+    -- Anchor all data frames together
+    local anchorChainSetting = Settings.RegisterProxySetting(
+        appearCat,
+        "LUI_AnchorDataFrames",
+        Settings.VarType.Boolean,
+        "Anchor data frames together",
+        LightUI.defaults.anchorDataFrames,
+        function() return LightKitDB.anchorDataFrames end,
+        function(value) LightUI.SetAnchorChained(value) end
+    )
+    Settings.CreateCheckbox(appearCat, anchorChainSetting,
+        "Chain the FPS/Ping, Gold Tracker, and Spec Info frames left-to-right with equal spacing. Each frame anchors to the nearest visible predecessor, so disabling any one frame closes the gap automatically.")
+
+    -- Snap frames to grid
+    local snapToGridSetting = Settings.RegisterProxySetting(
+        appearCat,
+        "LUI_SnapToGrid",
+        Settings.VarType.Boolean,
+        "Snap data frames to grid",
+        LightUI.defaults.snapToGrid,
+        function() return LightKitDB.snapToGrid end,
+        function(value) LightKitDB.snapToGrid = value end
+    )
+    Settings.CreateCheckbox(appearCat, snapToGridSetting,
+        "When enabled, frames snap to an 8px grid when released after dragging. Disable for free-form positioning.")
 
     -- ================================================================
     --  Subcategory: FPS & Ping
@@ -415,6 +476,91 @@ function M:Init()
         "Automatically sells all Poor-quality (grey) items when opening any vendor. Prints the total sale value to chat.")
 
     -- ================================================================
+    --  Subcategory: Spec Info
+    -- ================================================================
+    local specCat = Settings.RegisterVerticalLayoutSubcategory(category, "Spec Info")
+
+    -- Show / hide the frame
+    local specInfoSetting = Settings.RegisterProxySetting(
+        specCat,
+        "LUI_ShowSpecInfo",
+        Settings.VarType.Boolean,
+        "Show spec info frame",
+        LightUI.defaults.showSpecInfo,
+        function() return LightKitDB.showSpecInfo end,
+        function(value) LightUI.SpecInfo:SetShown(value) end
+    )
+    Settings.CreateCheckbox(specCat, specInfoSetting,
+        "Displays a small persistent frame showing your active loot spec and current talent loadout name.")
+
+    -- Lock frame position
+    local specInfoLockSetting = Settings.RegisterProxySetting(
+        specCat,
+        "LUI_LockSpecInfoFrame",
+        Settings.VarType.Boolean,
+        "Lock spec info frame position",
+        LightUI.defaults.specInfoFrameLocked,
+        function() return LightKitDB.specInfoFrameLocked end,
+        function(value) LightUI.SpecInfo:SetLocked(value) end
+    )
+    Settings.CreateCheckbox(specCat, specInfoLockSetting,
+        "Prevent accidental movement. When locked, hold Shift and drag to reposition the frame.")
+
+    -- Font size slider
+    local specInfoFontSizeSetting = Settings.RegisterProxySetting(
+        specCat,
+        "LUI_SpecInfoFontSize",
+        Settings.VarType.Number,
+        "Spec info font size",
+        LightUI.defaults.specInfoFontSize,
+        function() return LightKitDB.specInfoFontSize end,
+        function(value) LightUI.SpecInfo:SetFontSize(value) end
+    )
+    local specInfoSliderOptions = Settings.CreateSliderOptions(8, 32, 1)
+    specInfoSliderOptions:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right)
+    Settings.CreateSlider(specCat, specInfoFontSizeSetting, specInfoSliderOptions,
+        "Font size for the spec info label (8–32).")
+
+    -- Show active spec icon
+    local specShowSpecSetting = Settings.RegisterProxySetting(
+        specCat,
+        "LUI_SpecInfoShowSpec",
+        Settings.VarType.Boolean,
+        "Show active spec",
+        LightUI.defaults.specInfoShowSpec,
+        function() return LightKitDB.specInfoShowSpec end,
+        function(value) LightUI.SpecInfo:SetShowSpec(value) end
+    )
+    Settings.CreateCheckbox(specCat, specShowSpecSetting,
+        "Show the \"Spec:\" segment with your active specialization icon.")
+
+    -- Show loot spec icon
+    local specShowLootSetting = Settings.RegisterProxySetting(
+        specCat,
+        "LUI_SpecInfoShowLoot",
+        Settings.VarType.Boolean,
+        "Show loot spec",
+        LightUI.defaults.specInfoShowLoot,
+        function() return LightKitDB.specInfoShowLoot end,
+        function(value) LightUI.SpecInfo:SetShowLoot(value) end
+    )
+    Settings.CreateCheckbox(specCat, specShowLootSetting,
+        "Show the \"Loot:\" segment with your current loot specialization icon. Label turns yellow when pinned to a different spec than your active one.")
+
+    -- Show loadout name
+    local specShowLoadoutSetting = Settings.RegisterProxySetting(
+        specCat,
+        "LUI_SpecInfoShowLoadout",
+        Settings.VarType.Boolean,
+        "Show talent loadout",
+        LightUI.defaults.specInfoShowLoadout,
+        function() return LightKitDB.specInfoShowLoadout end,
+        function(value) LightUI.SpecInfo:SetShowLoadout(value) end
+    )
+    Settings.CreateCheckbox(specCat, specShowLoadoutSetting,
+        "Show the \"Loadout:\" segment with the name of your currently active talent loadout.")
+
+    -- ================================================================
     --  Subcategory: Miscellaneous
     -- ================================================================
     local miscCat = Settings.RegisterVerticalLayoutSubcategory(category, "Miscellaneous")
@@ -444,6 +590,19 @@ function M:Init()
     )
     Settings.CreateCheckbox(miscCat, chatCopySetting,
         "Shows a small \"C\" button in the corner of each chat frame. Click it to open a dialog with the full chat log that you can copy.")
+
+    -- Keep chat history on reload
+    local chatKeepHistorySetting = Settings.RegisterProxySetting(
+        miscCat,
+        "LUI_ChatKeepHistory",
+        Settings.VarType.Boolean,
+        "Keep chat history on reload",
+        LightUI.defaults.chatKeepHistory,
+        function() return LightKitDB.chatKeepHistory end,
+        function(value) LightUI.ChatCopy:SetKeepHistory(value) end
+    )
+    Settings.CreateCheckbox(miscCat, chatKeepHistorySetting,
+        "Saves up to 200 messages from the main chat frame so they are restored after a UI reload. History is automatically wiped on a real logout.")
 
     Settings.RegisterAddOnCategory(category)
     self.category = category

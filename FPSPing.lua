@@ -19,6 +19,7 @@ end
 function M:SetShown(shown)
     LightKitDB.showFPSPing = shown
     self.frame:SetShown(shown)
+    LightUI.RefreshAnchorChain()
 end
 
 --- Lock or unlock free dragging. When locked only Shift-drag works.
@@ -67,19 +68,9 @@ end
 function M:_BuildFrame()
     local f = CreateFrame("Frame", "LightUI_FPSPingFrame", UIParent, "BackdropTemplate")
     f:SetSize(60, 14)   -- width is overwritten dynamically after text update
-    f:SetClampedToScreen(true)
-    f:SetMovable(true)
 
-    f:SetBackdrop({
-        bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 10,
-        insets = { left = 3, right = 3, top = 3, bottom = 3 },
-    })
-    f:SetBackdropColor(0, 0, 0, 0.2)
-    f:SetBackdropBorderColor(0.25, 0.25, 0.25, 0.4)
-    f:EnableMouse(true)
-    f:RegisterForDrag("LeftButton")
+    LightUI.ApplyFrameStyle(f, LightKitDB.frameStyle)
+    LightUI.MakeDraggable(f, "fpsFrame", "fpsFrameLocked", false)
 
     -- Restore saved position (anchored to UIParent TOPLEFT)
     f:SetPoint("TOPLEFT", UIParent, "TOPLEFT",
@@ -148,26 +139,6 @@ function M:_BuildFrame()
         Resize()
     end
     self._update = Update
-
-    -- ---- Drag handlers ------------------------------------------
-    f:SetScript("OnDragStart", function(self)
-        -- Free drag when unlocked; Shift-drag always works regardless of lock.
-        if IsShiftKeyDown() or not LightKitDB.fpsFrameLocked then
-            self:StartMoving()
-        end
-    end)
-
-    f:SetScript("OnDragStop", function(self)
-        self:StopMovingOrSizing()
-        -- Snap to 8px grid, matching WoW's layout grid.
-        local grid = 8
-        local x = math.floor(self:GetLeft() / grid + 0.5) * grid
-        local y = math.floor((self:GetTop() - UIParent:GetHeight()) / grid + 0.5) * grid
-        LightKitDB.fpsFrame.x = x
-        LightKitDB.fpsFrame.y = y
-        self:ClearAllPoints()
-        self:SetPoint("TOPLEFT", UIParent, "TOPLEFT", x, y)
-    end)
 
     -- ---- Periodic stat update (every 1 s) -----------------------
     C_Timer.NewTicker(1, function()

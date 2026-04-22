@@ -203,6 +203,7 @@ end
 function M:SetShown(shown)
     LightKitDB.showGoldTracker = shown
     self.frame:SetShown(shown)
+    LightUI.RefreshAnchorChain()
 end
 
 function M:SetLocked(locked)
@@ -226,21 +227,11 @@ function M:Init()
     -- ---- Draggable frame ----------------------------------------
     local f = CreateFrame("Frame", "LightUI_GoldFrame", UIParent, "BackdropTemplate")
     f:SetSize(120, LightKitDB.goldFontSize + 8)
-    f:SetClampedToScreen(true)
-    f:SetMovable(true)
-    f:EnableMouse(true)
-    f:RegisterForDrag("LeftButton")
 
-    f:SetBackdrop({
-        bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 10,
-        insets = { left = 3, right = 3, top = 3, bottom = 3 },
-    })
-    f:SetBackdropColor(0, 0, 0, 0.2)
-    f:SetBackdropBorderColor(0.25, 0.25, 0.25, 0.4)
+    LightUI.ApplyFrameStyle(f, LightKitDB.frameStyle)
+    LightUI.MakeDraggable(f, "goldFrame", "goldFrameLocked", true)
 
-    -- Restore saved position (TOPLEFT anchor; default set in LightUI.defaults).
+    -- Restore saved position; anchor chain is applied by LightUI.RefreshAnchorChain.
     f:SetPoint("TOPLEFT", UIParent, "TOPLEFT",
                LightKitDB.goldFrame.x, LightKitDB.goldFrame.y)
 
@@ -259,23 +250,6 @@ function M:Init()
         f:SetWidth(math.max(label:GetStringWidth() + 16, 40))
     end
     self._resize = Resize
-
-    -- ---- Drag & position save -----------------------------------
-    f:SetScript("OnDragStart", function(self)
-        if IsShiftKeyDown() or not LightKitDB.goldFrameLocked then
-            self:StartMoving()
-        end
-    end)
-    f:SetScript("OnDragStop", function(self)
-        self:StopMovingOrSizing()
-        -- Snap to 8px grid, matching WoW's layout grid.
-        local grid = 8
-        local x = math.floor(self:GetLeft() / grid + 0.5) * grid
-        local y = math.floor((self:GetTop() - UIParent:GetHeight()) / grid + 0.5) * grid
-        LightKitDB.goldFrame = { x = x, y = y }
-        self:ClearAllPoints()
-        self:SetPoint("TOPLEFT", UIParent, "TOPLEFT", x, y)
-    end)
 
     -- ---- Tooltip ------------------------------------------------
     f:SetScript("OnEnter", function(self)
